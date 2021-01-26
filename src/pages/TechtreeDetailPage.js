@@ -10,6 +10,8 @@ import { techtreeDataList } from '../lib/dummyData'
 export default function TechtreeDetailPage({ match }) {
   const { techtreeID } = match.params
   const [techtreeData, setTechtreeData] = useState(techtreeDataList[0])
+  const [nodeList, setNodeList] = useState(techtreeDataList[0].nodeList)
+  const [linkList, setLinkList] = useState(techtreeDataList[0].linkList)
   // useEffect 로 fetching 해서 서버에서 테크트리 데이터 받아옴.
   // 로컬 스테이트로 테크트리 데이터를 실시간 수정.
   // 받아온 테크트리 데이터를 하위컴포넌트 d3 에게 준다.
@@ -26,11 +28,11 @@ export default function TechtreeDetailPage({ match }) {
       <DoubleSideLayout>
         <div>
           <TechtreeMap
-            nodeList={techtreeData.nodeList}
-            linkList={techtreeData.linkList}
+            nodeList={nodeList}
+            linkList={linkList}
             techtreeTitle={techtreeData.title}
             techtreeID={techtreeID}
-            testingSetter={setDocumentText}
+            testingSetter={setNodeList}
           />
         </div>
         <div>

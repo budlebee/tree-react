@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import styled from 'styled-components'
 import {
@@ -24,7 +24,7 @@ export default React.memo(function MarkdownEditor({
       setLocalText(e.target.value)
       bindingSetter(e.target.value)
     },
-    [localText]
+    [bindingSetter]
   )
 
   const addCodeBlock = useCallback(
@@ -34,7 +34,7 @@ export default React.memo(function MarkdownEditor({
       setLocalText(addedContent)
       bindingSetter(addedContent)
     },
-    [localText]
+    [localText, bindingSetter]
   )
 
   const addMathBlock = useCallback(
@@ -44,7 +44,7 @@ export default React.memo(function MarkdownEditor({
       setLocalText(addedContent)
       bindingSetter(addedContent)
     },
-    [localText]
+    [localText, bindingSetter]
   )
 
   const addBoldText = useCallback(
@@ -54,7 +54,7 @@ export default React.memo(function MarkdownEditor({
       setLocalText(addedContent)
       bindingSetter(addedContent)
     },
-    [localText]
+    [localText, bindingSetter]
   )
 
   const addItalicText = useCallback(
@@ -64,7 +64,7 @@ export default React.memo(function MarkdownEditor({
       setLocalText(addedContent)
       bindingSetter(addedContent)
     },
-    [localText]
+    [localText, bindingSetter]
   )
 
   const addLargeTitle = useCallback(
@@ -74,7 +74,7 @@ export default React.memo(function MarkdownEditor({
       setLocalText(addedContent)
       bindingSetter(addedContent)
     },
-    [localText]
+    [localText, bindingSetter]
   )
 
   const addLink = useCallback(
@@ -84,7 +84,7 @@ export default React.memo(function MarkdownEditor({
       setLocalText(addedContent)
       bindingSetter(addedContent)
     },
-    [localText]
+    [localText, bindingSetter]
   )
 
   return (

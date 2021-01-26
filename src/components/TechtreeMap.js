@@ -1,14 +1,11 @@
 import React from 'react'
 import * as d3 from 'd3'
-import { Link } from 'react-router-dom'
+import { uid } from 'uid'
+
 import { colorPalette } from '../lib/styleGuide'
 import styled from 'styled-components'
 
 const TechtreeThumbnailBlock = styled.div`
-  border-radius: 10px;
-  border: 1px solid ${colorPalette.cyan5};
-`
-const TechtreeThumbnailCard = styled.div`
   border-radius: 10px;
   border: 1px solid ${colorPalette.cyan5};
 `
@@ -29,10 +26,10 @@ export default React.memo(function TechtreeThumbnail({
   }, [])
 
   return (
-    <TechtreeThumbnailCard>
+    <>
       <TechtreeThumbnailBlock ref={containerRef} />
       <div>{techtreeTitle}</div>
-    </TechtreeThumbnailCard>
+    </>
   )
 })
 
@@ -52,7 +49,7 @@ function runForceGraph(
   const linkWidth = '2.5px'
   const linkColor = '#000000'
 
-  const width = `inherit`
+  const width = '100%'
   const height = `inherit`
 
   let nodeList = originalNodeList
@@ -110,9 +107,6 @@ function runForceGraph(
     .attr('class', (d) => {
       return d.id
     })
-    .on('dblclick', (d) => {
-      testingSetter('여기서도 세터가 호출되나?')
-    })
 
   labelGroup
     .selectAll('text')
@@ -132,6 +126,66 @@ function runForceGraph(
     })
     .style('user-select', 'none')
     .style('background-color', '#ffffff')
+
+  svg.on('dblclick', () => {
+    const createdNode = {
+      id: `node${uid(20)}`,
+      name: '새로운 노드',
+      x: d3.event.pageX,
+      y: d3.event.pageY,
+      radius: nodeRadius,
+      body: '새로운 내용',
+      tag: '프론트엔드',
+      fillColor: '#00bebe',
+      parentNodeID: [],
+      childNodeID: [],
+    }
+    nodeList = [...nodeList, createdNode]
+    testingSetter(nodeList)
+    updateNode()
+  })
+
+  function updateNode() {
+    nodeGroup
+      .selectAll('circle')
+      .data(nodeList)
+      .join('circle')
+      .attr('r', (d) => {
+        return d.radius
+      })
+      //.style('stroke', selectedNodeHighlightColor)
+      .style('fill', (d) => d.fillColor)
+      .attr('cx', (d) => {
+        return d.x
+      })
+      .attr('cy', (d) => {
+        return d.y - navbarHeight
+      })
+      .attr('class', (d) => {
+        return d.id
+      })
+      .style('cursor', 'pointer')
+
+    labelGroup
+      .selectAll('text')
+      .data(nodeList)
+      .join('text')
+      .attr('x', (d) => {
+        return d.x
+      })
+      .attr('y', (d) => {
+        return d.y - navbarHeight + nodeRadius * 2
+      })
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'central')
+      .attr('class', (d) => d.id)
+      .text((d) => {
+        return d.name
+      })
+      .style('user-select', 'none')
+
+    console.log('노드가 갱신됨.')
+  }
 
   return {
     nodes: () => {
