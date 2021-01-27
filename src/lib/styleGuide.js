@@ -2,8 +2,8 @@ export const mediaQuery = (maxWidth) => `
 @media (max-width: ${maxWidth}px)
 `
 
-// mobile: 0 to 768. 가로요소 1개.
-// tablit: 768 to 1024. 가로요소 2개
+// mobile: 0 to 650. 가로요소 1개.
+// tablit: 650 to 1024. 가로요소 2개
 // desktop: 1024 ~ 1440. 가로요소 3개.
 // 1440 ~ : 가로요소 4개 이상.
 export const mediaSize = {
@@ -12,8 +12,20 @@ export const mediaSize = {
   large: mediaQuery(1200),
   medium: mediaQuery(1024),
   small: mediaQuery(768),
-  xsmall: mediaQuery(375),
+  xsmall: mediaQuery(650),
+  xxsmall: mediaQuery(375),
   custom: mediaQuery,
+}
+
+export const fontSize = {
+  xxsmall: '12px',
+  xsmall: '14px',
+  small: '16px',
+  medium: '18px', // recommended for body text.
+  larget: '20px',
+  xlarge: '24px',
+  xxlarge: '32px',
+  maximum: '48px',
 }
 
 export const primaryColor = '#22b8cf'

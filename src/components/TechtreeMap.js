@@ -5,9 +5,11 @@ import { uid } from 'uid'
 import { colorPalette } from '../lib/styleGuide'
 import styled from 'styled-components'
 
+import { returnPreviousNodeList, returnNextNodeList } from '../lib/functions'
+
 const TechtreeThumbnailBlock = styled.div`
   border-radius: 10px;
-  border: 1px solid ${colorPalette.cyan5};
+  border: 1px solid ${colorPalette.cyan4};
 `
 
 export default React.memo(function TechtreeThumbnail({
@@ -16,28 +18,38 @@ export default React.memo(function TechtreeThumbnail({
   techtreeTitle,
   techtreeID,
   testingSetter,
+  setSelectedNode,
 }) {
   const containerRef = React.useRef(null)
 
   React.useEffect(() => {
     if (containerRef.current) {
-      runForceGraph(containerRef.current, nodeList, linkList, testingSetter)
+      console.log('컨테이너레프.커런트:', containerRef.current)
+      initGraph(
+        containerRef.current,
+        nodeList,
+        linkList,
+        testingSetter,
+        setSelectedNode
+      )
+      console.log('그래프 생성')
     }
-  }, [])
+  }, [nodeList, linkList])
 
   return (
     <>
-      <TechtreeThumbnailBlock ref={containerRef} />
       <div>{techtreeTitle}</div>
+      <TechtreeThumbnailBlock ref={containerRef} />
     </>
   )
 })
 
-function runForceGraph(
+function initGraph(
   container,
   originalNodeList,
   originalLinkList,
-  testingSetter
+  testingSetter,
+  setSelectedNode
 ) {
   // 데이터 저장 원칙 : navbar 높이때문에 Y좌표는 보정이 필요함.
   // 하지만 보정을 가한 좌표를 저장하지 않는다. 순수한 좌표를 저장해야함.
@@ -49,8 +61,8 @@ function runForceGraph(
   const linkWidth = '2.5px'
   const linkColor = '#000000'
 
-  const width = '100%'
-  const height = `inherit`
+  const width = 600
+  const height = 600
 
   let nodeList = originalNodeList
   let linkList = originalLinkList
@@ -106,6 +118,12 @@ function runForceGraph(
     })
     .attr('class', (d) => {
       return d.id
+    })
+    .on('click', (d) => {
+      const previousNodeList = returnPreviousNodeList(linkList, nodeList, d)
+      const nextNodeList = returnNextNodeList(linkList, nodeList, d)
+
+      setSelectedNode(d)
     })
 
   labelGroup
@@ -187,9 +205,9 @@ function runForceGraph(
     console.log('노드가 갱신됨.')
   }
 
-  return {
-    nodes: () => {
-      return svg.node()
-    },
-  }
+  //return {
+  //  nodes: () => {
+  //    return svg.node()
+  //  },
+  //}
 }

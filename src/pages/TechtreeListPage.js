@@ -29,6 +29,7 @@ const GridContainer = styled.div`
   grid-template-columns: 1fr 1fr 1fr 1fr;
   align-items: center; // 세로축에서 중앙정렬
   justify-items: center; // 가로축에서 중앙정렬
+  width: 'auto';
 
   @media (max-width: 1440px) {
     grid-template-columns: 1fr 1fr 1fr;

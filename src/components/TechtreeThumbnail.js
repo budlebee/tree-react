@@ -11,6 +11,7 @@ const TechtreeThumbnailBlock = styled.div`
 const TechtreeThumbnailCard = styled.div`
   border-radius: 10px;
   border: 1px solid ${colorPalette.cyan5};
+  width: '100%';
 `
 
 export default React.memo(function TechtreeThumbnail({
@@ -28,12 +29,12 @@ export default React.memo(function TechtreeThumbnail({
   }, [])
 
   return (
-    <Link to={`/techtree/${techtreeID}`}>
-      <TechtreeThumbnailCard>
+    <TechtreeThumbnailCard>
+      <Link to={`/techtree/${techtreeID}`}>
         <TechtreeThumbnailBlock ref={containerRef} />
         <div>{techtreeTitle}</div>
-      </TechtreeThumbnailCard>
-    </Link>
+      </Link>
+    </TechtreeThumbnailCard>
   )
 })
 

@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import MainWrapper from '../wrappers/MainWrapper'
 import MarkdownEditor from '../components/MarkdownEditor'
 import MarkdownRenderer from '../components/MarkdownRenderer'
@@ -7,21 +8,61 @@ import TechtreeMap from '../components/TechtreeMap'
 import styled from 'styled-components'
 import { techtreeDataList } from '../lib/dummyData'
 
+// 테스팅을 위해 임의 할당
+const techtreeDummyData = techtreeDataList[0]
+
 export default function TechtreeDetailPage({ match }) {
+  const dispatch = useDispatch()
   const { techtreeID } = match.params
-  const [techtreeData, setTechtreeData] = useState(techtreeDataList[0])
-  const [nodeList, setNodeList] = useState(techtreeDataList[0].nodeList)
-  const [linkList, setLinkList] = useState(techtreeDataList[0].linkList)
-  // useEffect 로 fetching 해서 서버에서 테크트리 데이터 받아옴.
-  // 로컬 스테이트로 테크트리 데이터를 실시간 수정.
-  // 받아온 테크트리 데이터를 하위컴포넌트 d3 에게 준다.
-  // d3는 그걸 기반으로 이니셜 렌더링을 한다.
-  // 그리고 d3에서 새로운 노드와 링크가 추가되면, 상위 컴포넌트로 넘긴다?
-  // 셋터를 그렇게 넘겨서 호출해도 가능하나?
+  const [techtreeData, setTechtreeData] = useState({})
+
+  const [selectedNode, setSelectedNode] = useState({
+    id: 'asdfasdfasdfasdfasdfasdf',
+    name: '이니셜값. 원래는 공백이어야 함.',
+    x: 150,
+    y: 150,
+    radius: 15,
+    body: '이니셜값. 원래는 공백이어야 함.',
+    tag: '프론트엔드',
+    fillColor: '#91a7ff',
+  })
+  const [nodeList, setNodeList] = useState([])
+  const [linkList, setLinkList] = useState([])
+  const [previoustNodeList, setPreviousNodeList] = useState([])
+  const [nextNodeList, setNextNodeList] = useState([])
 
   const [isEditingDocument, setIsEditingDocument] = useState(false)
-  const [documentTitle, setDocumentTitle] = useState('처음 초기값 Title')
-  const [documentText, setDocumentText] = useState('처음 초기값 Text')
+
+  const [documentTitle, setDocumentTitle] = useState('')
+  const [documentText, setDocumentText] = useState('')
+
+  useEffect(() => {
+    // 맨 첫 로딩때 서버에서 테크트리 데이터 가져오는 용도.
+  }, [])
+
+  useEffect(() => {
+    setTechtreeData(techtreeDummyData)
+    setNodeList(techtreeDummyData.nodeList)
+    setLinkList(techtreeDummyData.linkList)
+    setDocumentTitle(selectedNode.name)
+    setDocumentText(selectedNode.body)
+  }, [selectedNode])
+
+  const onChangeDocumentTitle = useCallback(
+    (e) => {
+      e.preventDefault()
+      setDocumentTitle(e.target.value)
+    },
+    [documentTitle]
+  )
+
+  const onFinishEdit = useCallback(() => {
+    // 여기서 dispatch 로 리덕스에서 api 통신하자.
+    // 서버에다가 수정사항을 보내고, 클라이언트 쪽 상태에 저장된
+    // techtree 정보를 업데이트 하자.
+    // 결국은 selectedNode 랑 그런걸 전부 리덕스 스테이트로 해야하네..
+    setIsEditingDocument(false)
+  }, [isEditingDocument])
 
   return (
     <MainWrapper>
@@ -33,25 +74,35 @@ export default function TechtreeDetailPage({ match }) {
             techtreeTitle={techtreeData.title}
             techtreeID={techtreeID}
             testingSetter={setNodeList}
+            setSelectedNode={setSelectedNode}
           />
         </div>
         <div>
           {isEditingDocument ? (
-            <MarkdownEditor
-              bindingText={documentText}
-              bindingSetter={setDocumentText}
-            />
+            <>
+              <input value={documentTitle} onChange={onChangeDocumentTitle} />
+              <MarkdownEditor
+                bindingText={documentText}
+                bindingSetter={setDocumentText}
+              />
+            </>
           ) : (
-            <MarkdownRenderer text={documentText} />
+            <>
+              <div>{documentTitle}</div>
+              <MarkdownRenderer text={documentText} />
+            </>
           )}
-          <MarkdownRenderer text={documentText} />
-          <button
-            onClick={() => {
-              setIsEditingDocument(!isEditingDocument)
-            }}
-          >
-            {isEditingDocument ? '수정완료' : '내용수정'}
-          </button>
+          {isEditingDocument ? (
+            <button onClick={onFinishEdit}>수정완료</button>
+          ) : (
+            <button
+              onClick={() => {
+                setIsEditingDocument(true)
+              }}
+            >
+              문서 수정
+            </button>
+          )}
         </div>
       </DoubleSideLayout>
     </MainWrapper>
