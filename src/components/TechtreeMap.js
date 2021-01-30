@@ -6,6 +6,9 @@ import { colorPalette } from '../lib/styleGuide'
 import styled from 'styled-components'
 
 import { returnPreviousNodeList, returnNextNodeList } from '../lib/functions'
+import { selectNode, createNode } from '../redux/techtree'
+import { useDispatch, useSelector } from 'react-redux'
+import { reduxStore } from '../index'
 
 const TechtreeThumbnailBlock = styled.div`
   border-radius: 10px;
@@ -18,22 +21,31 @@ export default React.memo(function TechtreeThumbnail({
   techtreeTitle,
   techtreeID,
   testingSetter,
-  setSelectedNode,
 }) {
+  const dispatch = useDispatch()
   const containerRef = React.useRef(null)
+
+  const { selectedNode } = useSelector((state) => {
+    return { selectedNode: state.techtree.selectedNode }
+  })
 
   React.useEffect(() => {
     if (containerRef.current) {
-      console.log('컨테이너레프.커런트:', containerRef.current)
-      initGraph(
-        containerRef.current,
-        nodeList,
-        linkList,
-        testingSetter,
-        setSelectedNode
-      )
+      console.log('컨테이너레프:', containerRef)
+
+      initGraph(containerRef.current, nodeList, linkList, testingSetter)
       console.log('그래프 생성')
     }
+  }, [])
+  React.useEffect(() => {
+    updateGraph(
+      containerRef.current,
+      nodeList,
+      linkList,
+      testingSetter,
+      dispatch
+    )
+    console.log('그래프 업데이트')
   }, [nodeList, linkList])
 
   return (
@@ -48,8 +60,7 @@ function initGraph(
   container,
   originalNodeList,
   originalLinkList,
-  testingSetter,
-  setSelectedNode
+  testingSetter
 ) {
   // 데이터 저장 원칙 : navbar 높이때문에 Y좌표는 보정이 필요함.
   // 하지만 보정을 가한 좌표를 저장하지 않는다. 순수한 좌표를 저장해야함.
@@ -70,8 +81,39 @@ function initGraph(
   const svg = d3
     .select(container)
     .append('svg')
-    .attr('height', height)
     .attr('width', width)
+    .attr('height', height)
+
+  const linkGroup = svg.append('g').attr('class', 'links')
+  const nodeGroup = svg.append('g').attr('class', 'nodes')
+  const labelGroup = svg.append('g').attr('class', 'labels')
+
+  //return {
+  //  nodes: () => {
+  //    return svg.node()
+  //  },
+  //}
+}
+
+function updateGraph(
+  container,
+  originalNodeList,
+  originalLinkList,
+  testingSetter,
+  dispatch
+) {
+  const nodeRadius = 15
+  const navbarHeight = 85
+  const linkWidth = '2.5px'
+  const linkColor = '#000000'
+
+  const width = 600
+  const height = 600
+
+  let nodeList = originalNodeList
+  let linkList = originalLinkList
+
+  const svg = d3.select(container).select('svg')
 
   // 화살표 마커
   svg
@@ -87,9 +129,9 @@ function initGraph(
     .attr('d', 'M0,-5L10,0L0,5')
     .attr('fill', '#000')
 
-  const linkGroup = svg.append('g').attr('class', 'links')
-  const nodeGroup = svg.append('g').attr('class', 'nodes')
-  const labelGroup = svg.append('g').attr('class', 'labels')
+  const linkGroup = svg.select('.links')
+  const nodeGroup = svg.select('.nodes')
+  const labelGroup = svg.select('.labels')
 
   linkGroup
     .selectAll('line')
@@ -123,7 +165,7 @@ function initGraph(
       const previousNodeList = returnPreviousNodeList(linkList, nodeList, d)
       const nextNodeList = returnNextNodeList(linkList, nodeList, d)
 
-      setSelectedNode(d)
+      dispatch(selectNode(previousNodeList, nextNodeList, d))
     })
 
   labelGroup
@@ -159,7 +201,7 @@ function initGraph(
       childNodeID: [],
     }
     nodeList = [...nodeList, createdNode]
-    testingSetter(nodeList)
+    reduxStore.dispatch(createNode(nodeList))
     updateNode()
   })
 
@@ -181,6 +223,12 @@ function initGraph(
       })
       .attr('class', (d) => {
         return d.id
+      })
+      .on('click', (d) => {
+        const previousNodeList = returnPreviousNodeList(linkList, nodeList, d)
+        const nextNodeList = returnNextNodeList(linkList, nodeList, d)
+
+        dispatch(selectNode(previousNodeList, nextNodeList, d))
       })
       .style('cursor', 'pointer')
 
@@ -204,10 +252,5 @@ function initGraph(
 
     console.log('노드가 갱신됨.')
   }
-
-  //return {
-  //  nodes: () => {
-  //    return svg.node()
-  //  },
-  //}
+  console.log('그래프가 업데이트됨.')
 }

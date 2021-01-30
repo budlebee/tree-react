@@ -1,7 +1,10 @@
 const initialState = {
   previousNodeList: [],
   nextNodeList: [],
-  selectedNode: {},
+  selectedNode: {
+    name: '지식트리를 꾸며보세요',
+    body: '마크다운과 코드블럭, 사진첨부도 가능합니다',
+  },
   isEditingDocument: false,
   isEditingTechtree: false,
   techtreeData: {
@@ -47,6 +50,7 @@ const initialState = {
 const EDIT_DOCUMENT = 'techtree/EDIT_DOCUMENT'
 const EDIT_TECHTREE = 'techtree/EDIT_TECHTREE'
 const FINISH_DOCU_EDIT = 'techtree/FINISH_DOCU_EDIT'
+
 const SELECT_NODE = 'techtree/SELECT_NODE'
 
 const CREATE_NODE = 'techtree/CREATE_NODE'
@@ -63,7 +67,7 @@ export const finishDocuEdit = (nodeID, nodeName, nodeBody) => {
   return { type: FINISH_DOCU_EDIT, nodeID, nodeName, nodeBody }
 }
 export const selectNode = (previousNodeList, nextNodeList, node) => {
-  return { type: SELECT_NODE, node, previousNodeList, nextNodeList }
+  return { type: SELECT_NODE, previousNodeList, nextNodeList, node }
 }
 export const createNode = (nodeList) => {
   return { type: CREATE_NODE, nodeList: nodeList }

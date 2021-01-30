@@ -13,19 +13,12 @@ const techtreeDummyData = techtreeDataList[0]
 
 export default function TechtreeDetailPage({ match }) {
   const dispatch = useDispatch()
+  const { selectedNode } = useSelector((state) => {
+    return { selectedNode: state.techtree.selectedNode }
+  })
   const { techtreeID } = match.params
   const [techtreeData, setTechtreeData] = useState({})
 
-  const [selectedNode, setSelectedNode] = useState({
-    id: 'asdfasdfasdfasdfasdfasdf',
-    name: '이니셜값. 원래는 공백이어야 함.',
-    x: 150,
-    y: 150,
-    radius: 15,
-    body: '이니셜값. 원래는 공백이어야 함.',
-    tag: '프론트엔드',
-    fillColor: '#91a7ff',
-  })
   const [nodeList, setNodeList] = useState([])
   const [linkList, setLinkList] = useState([])
   const [previoustNodeList, setPreviousNodeList] = useState([])
@@ -74,7 +67,6 @@ export default function TechtreeDetailPage({ match }) {
             techtreeTitle={techtreeData.title}
             techtreeID={techtreeID}
             testingSetter={setNodeList}
-            setSelectedNode={setSelectedNode}
           />
         </div>
         <div>
