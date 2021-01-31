@@ -15,9 +15,7 @@ const TechtreeThumbnailBlock = styled.div`
   border: 1px solid ${colorPalette.cyan4};
 `
 
-export default React.memo(function TechtreeThumbnail({
-  nodeList,
-  linkList,
+export default React.memo(function TechtreeMap({
   techtreeTitle,
   techtreeID,
   testingSetter,
@@ -25,9 +23,9 @@ export default React.memo(function TechtreeThumbnail({
   const dispatch = useDispatch()
   const containerRef = React.useRef(null)
 
-  const { selectedNode } = useSelector((state) => {
-    return { selectedNode: state.techtree.selectedNode }
-  })
+  const selectedNode = useSelector((state) => state.techtree.selectedNode)
+  const nodeList = useSelector((state) => state.techtree.nodeList)
+  const linkList = useSelector((state) => state.techtree.linkList)
 
   React.useEffect(() => {
     if (containerRef.current) {
@@ -40,13 +38,12 @@ export default React.memo(function TechtreeThumbnail({
   React.useEffect(() => {
     updateGraph(
       containerRef.current,
-      nodeList,
-      linkList,
+
       testingSetter,
       dispatch
     )
-    console.log('그래프 업데이트')
-  }, [nodeList, linkList])
+    console.log('useEffect를 통한 updateGraph 가 호출됨.')
+  }, [containerRef, nodeList, linkList, dispatch])
 
   return (
     <>
@@ -95,13 +92,7 @@ function initGraph(
   //}
 }
 
-function updateGraph(
-  container,
-  originalNodeList,
-  originalLinkList,
-  testingSetter,
-  dispatch
-) {
+function updateGraph(container, testingSetter, dispatch) {
   const nodeRadius = 15
   const navbarHeight = 85
   const linkWidth = '2.5px'
@@ -110,8 +101,10 @@ function updateGraph(
   const width = 600
   const height = 600
 
-  let nodeList = originalNodeList
-  let linkList = originalLinkList
+  let nodeList = reduxStore.getState().techtree.nodeList
+  let linkList = reduxStore.getState().techtree.linkList
+
+  reduxStore.subscribe(updateNode)
 
   const svg = d3.select(container).select('svg')
 

@@ -1,3 +1,5 @@
+import { dispatch } from 'd3'
+
 const initialState = {
   previousNodeList: [],
   nextNodeList: [],
@@ -7,42 +9,45 @@ const initialState = {
   },
   isEditingDocument: false,
   isEditingTechtree: false,
+  nodeList: [
+    {
+      id: 'asdfasdfasdfasdfasdfasdf',
+      name: '첫번째 노드',
+      x: 150,
+      y: 150,
+      radius: 15,
+      body: '## 이것은 마크다운.\n실험용 첫번째 노드',
+      tag: '프론트엔드',
+      fillColor: '#91a7ff',
+    },
+    {
+      id: 'bbdfasdfasdfasdfasdfasdf',
+      name: '두번째 노드',
+      x: 300,
+      y: 300,
+      radius: 15,
+      body: 'x랑 y의 값은 둘다 300임. 두번째 노드임',
+      tag: '백엔드',
+      fillColor: '#339af0',
+    },
+  ],
+  linkList: [
+    {
+      startNodeID: 'asdfasdfasdfasdfasdfasdf',
+      endNodeID: 'bbdfasdfasdfasdfasdfasdf',
+      startX: 150,
+      startY: 150,
+      endX: 300,
+      endY: 300,
+      id: 'ccdfasdfasdfasdfasdfasdf',
+      left: false,
+      right: true,
+    },
+  ],
   techtreeData: {
-    nodeList: [
-      {
-        id: 'asdfasdfasdfasdfasdfasdf',
-        name: '첫번째 노드',
-        x: 150,
-        y: 150,
-        radius: 15,
-        body: '## 이것은 마크다운.\n실험용 첫번째 노드',
-        tag: '프론트엔드',
-        fillColor: '#91a7ff',
-      },
-      {
-        id: 'bbdfasdfasdfasdfasdfasdf',
-        name: '두번째 노드',
-        x: 300,
-        y: 300,
-        radius: 15,
-        body: 'x랑 y의 값은 둘다 300임. 두번째 노드임',
-        tag: '백엔드',
-        fillColor: '#339af0',
-      },
-    ],
-    linkList: [
-      {
-        startNodeID: 'asdfasdfasdfasdfasdfasdf',
-        endNodeID: 'bbdfasdfasdfasdfasdfasdf',
-        startX: 150,
-        startY: 150,
-        endX: 300,
-        endY: 300,
-        id: 'ccdfasdfasdfasdfasdfasdf',
-        left: false,
-        right: true,
-      },
-    ],
+    title: 'empty',
+    nodeList: [{}],
+    linkList: [{}],
   },
 }
 
@@ -55,6 +60,9 @@ const SELECT_NODE = 'techtree/SELECT_NODE'
 
 const CREATE_NODE = 'techtree/CREATE_NODE'
 const CREATE_LINK = 'techtree/CREATE_LINK'
+
+const READ_TECHTREE_DATA_TRY = 'techtree/READ_TECHTREE_DATA_TRY'
+const READ_TECHTREE_DATA_SUCCESS = 'techtree/READ_TECHTREE_DATA_SUCCESS'
 
 // action 생성 함수
 export const editTechtree = () => {
@@ -76,6 +84,11 @@ export const createLink = (linkList) => {
   return { type: CREATE_LINK, linkList: linkList }
 }
 
+// 원래는 thunk 이용해서 중간에 하나 더 있어야 하지만, 로컬 테스트용으로
+export const readTechtree = (techtreeDummyData) => {
+  return { type: READ_TECHTREE_DATA_SUCCESS, techtreeData: techtreeDummyData }
+}
+
 export default function techtree(state = initialState, action) {
   switch (action.type) {
     case CREATE_LINK:
@@ -93,6 +106,7 @@ export default function techtree(state = initialState, action) {
           ...state.techtreeData,
           nodeList: action.nodeList,
         },
+        nodeList: action.nodeList,
       }
     case EDIT_TECHTREE:
       return {
@@ -121,6 +135,7 @@ export default function techtree(state = initialState, action) {
       return {
         ...state,
         techtreeData: { ...state.techtreeData, nodeList: newNodeList },
+        nodeList: newNodeList,
         isEditingDocument: false,
         isEditingTechtree: false,
       }
@@ -132,6 +147,11 @@ export default function techtree(state = initialState, action) {
         selectedNode: action.node,
         previousNodeList: action.previousNodeList,
         nextNodeList: action.nextNodeList,
+      }
+    case READ_TECHTREE_DATA_SUCCESS:
+      return {
+        ...state,
+        techtreeData: action.techtreeDummyData,
       }
     default:
       return { ...state }

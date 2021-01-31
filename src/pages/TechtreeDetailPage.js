@@ -8,28 +8,30 @@ import TechtreeMap from '../components/TechtreeMap'
 import styled from 'styled-components'
 import { techtreeDataList } from '../lib/dummyData'
 
-import { finishDocuEdit, selectNode } from '../redux/techtree'
+import { finishDocuEdit, selectNode, readTechtree } from '../redux/techtree'
 
 // 테스팅을 위해 임의 할당
 const techtreeDummyData = techtreeDataList[0]
 
 export default function TechtreeDetailPage({ match }) {
   const dispatch = useDispatch()
+
   const { selectedNode } = useSelector((state) => {
     return { selectedNode: state.techtree.selectedNode }
   })
-  const { techtreeData, nodeList, linkList } = useSelector((state) => {
-    return {
-      techtreeData: state.techtree.techtreeData,
-      nodeList: state.techtree.techtreeData.nodeList,
-      linkList: state.techtree.techtreeData.linkList,
+
+  const { techtreeData, nodeList, linkList, techtreeTitle } = useSelector(
+    (state) => {
+      return {
+        techtreeData: state.techtree.techtreeData,
+        nodeList: state.techtree.nodeList,
+        linkList: state.techtree.linkList,
+        techtreeTitle: state.techtree.techtreeTitle,
+      }
     }
-  })
+  )
 
   const { techtreeID } = match.params
-
-  const [previoustNodeList, setPreviousNodeList] = useState([])
-  const [nextNodeList, setNextNodeList] = useState([])
 
   const [isEditingDocument, setIsEditingDocument] = useState(false)
 
@@ -39,6 +41,7 @@ export default function TechtreeDetailPage({ match }) {
   useEffect(() => {
     // 맨 첫 로딩때 서버에서 테크트리 데이터 가져오는 용도.
     // dispatch 를 통해 redux 상태에 해당 테크트리 데이터를 셋팅한다.
+    dispatch(readTechtree(techtreeDummyData))
   }, [])
 
   useEffect(() => {
@@ -67,12 +70,7 @@ export default function TechtreeDetailPage({ match }) {
     <MainWrapper>
       <DoubleSideLayout>
         <div>
-          <TechtreeMap
-            nodeList={nodeList}
-            linkList={linkList}
-            techtreeTitle={techtreeData.title}
-            techtreeID={techtreeID}
-          />
+          <TechtreeMap techtreeTitle={techtreeTitle} techtreeID={techtreeID} />
         </div>
         <div>
           {isEditingDocument ? (
