@@ -164,9 +164,9 @@ function updateGraph(
     .on('click', (d) => {
       const previousNodeList = returnPreviousNodeList(linkList, nodeList, d)
       const nextNodeList = returnNextNodeList(linkList, nodeList, d)
-
       dispatch(selectNode(previousNodeList, nextNodeList, d))
     })
+    .style('cursor', 'pointer')
 
   labelGroup
     .selectAll('text')

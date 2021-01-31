@@ -8,6 +8,8 @@ import TechtreeMap from '../components/TechtreeMap'
 import styled from 'styled-components'
 import { techtreeDataList } from '../lib/dummyData'
 
+import { finishDocuEdit, selectNode } from '../redux/techtree'
+
 // 테스팅을 위해 임의 할당
 const techtreeDummyData = techtreeDataList[0]
 
@@ -16,11 +18,16 @@ export default function TechtreeDetailPage({ match }) {
   const { selectedNode } = useSelector((state) => {
     return { selectedNode: state.techtree.selectedNode }
   })
-  const { techtreeID } = match.params
-  const [techtreeData, setTechtreeData] = useState({})
+  const { techtreeData, nodeList, linkList } = useSelector((state) => {
+    return {
+      techtreeData: state.techtree.techtreeData,
+      nodeList: state.techtree.techtreeData.nodeList,
+      linkList: state.techtree.techtreeData.linkList,
+    }
+  })
 
-  const [nodeList, setNodeList] = useState([])
-  const [linkList, setLinkList] = useState([])
+  const { techtreeID } = match.params
+
   const [previoustNodeList, setPreviousNodeList] = useState([])
   const [nextNodeList, setNextNodeList] = useState([])
 
@@ -31,12 +38,10 @@ export default function TechtreeDetailPage({ match }) {
 
   useEffect(() => {
     // 맨 첫 로딩때 서버에서 테크트리 데이터 가져오는 용도.
+    // dispatch 를 통해 redux 상태에 해당 테크트리 데이터를 셋팅한다.
   }, [])
 
   useEffect(() => {
-    setTechtreeData(techtreeDummyData)
-    setNodeList(techtreeDummyData.nodeList)
-    setLinkList(techtreeDummyData.linkList)
     setDocumentTitle(selectedNode.name)
     setDocumentText(selectedNode.body)
   }, [selectedNode])
@@ -54,8 +59,9 @@ export default function TechtreeDetailPage({ match }) {
     // 서버에다가 수정사항을 보내고, 클라이언트 쪽 상태에 저장된
     // techtree 정보를 업데이트 하자.
     // 결국은 selectedNode 랑 그런걸 전부 리덕스 스테이트로 해야하네..
+    dispatch(finishDocuEdit(selectedNode.id, documentTitle, documentText))
     setIsEditingDocument(false)
-  }, [isEditingDocument])
+  }, [isEditingDocument, selectedNode, documentTitle, documentText])
 
   return (
     <MainWrapper>
@@ -66,7 +72,6 @@ export default function TechtreeDetailPage({ match }) {
             linkList={linkList}
             techtreeTitle={techtreeData.title}
             techtreeID={techtreeID}
-            testingSetter={setNodeList}
           />
         </div>
         <div>

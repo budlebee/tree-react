@@ -116,6 +116,8 @@ export default function techtree(state = initialState, action) {
         name: action.nodeName,
         body: action.nodeBody,
       }
+      console.log('action.nodeName: ', action.nodeName)
+      console.log('action.nodeBody: ', action.nodeBody)
       return {
         ...state,
         techtreeData: { ...state.techtreeData, nodeList: newNodeList },
