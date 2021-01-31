@@ -44,6 +44,7 @@ const initialState = {
       right: true,
     },
   ],
+  techtreeTitle: '',
   techtreeData: {
     title: 'empty',
     nodeList: [{}],
@@ -98,6 +99,7 @@ export default function techtree(state = initialState, action) {
           ...state.techtreeData,
           linkList: action.linkList,
         },
+        linkList: action.linkList,
       }
     case CREATE_NODE:
       return {

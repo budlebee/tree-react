@@ -6,7 +6,7 @@ import { colorPalette } from '../lib/styleGuide'
 import styled from 'styled-components'
 
 import { returnPreviousNodeList, returnNextNodeList } from '../lib/functions'
-import { selectNode, createNode } from '../redux/techtree'
+import { selectNode, createNode, createLink } from '../redux/techtree'
 import { useDispatch, useSelector } from 'react-redux'
 import { reduxStore } from '../index'
 
@@ -81,6 +81,16 @@ function initGraph(
     .attr('width', width)
     .attr('height', height)
 
+  // 마우스 드래그할때 나타나는 임시 라인 만들어두기.
+  svg
+    .append('g')
+    .append('line')
+    .attr('class', 'tempLine')
+    .style('stroke', linkColor)
+    .style('stroke-width', linkWidth)
+    .attr('marker-end', 'url(#end-arrow)')
+    .style('opacity', '0')
+
   const linkGroup = svg.append('g').attr('class', 'links')
   const nodeGroup = svg.append('g').attr('class', 'nodes')
   const labelGroup = svg.append('g').attr('class', 'labels')
@@ -94,7 +104,7 @@ function initGraph(
 
 function updateGraph(container, testingSetter, dispatch) {
   const nodeRadius = 15
-  const navbarHeight = 85
+  const navbarHeight = 0
   const linkWidth = '2.5px'
   const linkColor = '#000000'
 
@@ -103,6 +113,15 @@ function updateGraph(container, testingSetter, dispatch) {
 
   let nodeList = reduxStore.getState().techtree.nodeList
   let linkList = reduxStore.getState().techtree.linkList
+  let tempPairingNodes = {
+    startNodeID: null,
+    startX: null,
+    startY: null,
+    endNodeID: null,
+    id: null,
+    endX: null,
+    endY: null,
+  }
 
   reduxStore.subscribe(updateNode)
 
@@ -159,6 +178,47 @@ function updateGraph(container, testingSetter, dispatch) {
       const nextNodeList = returnNextNodeList(linkList, nodeList, d)
       dispatch(selectNode(previousNodeList, nextNodeList, d))
     })
+    .on('mousedown', (d) => {
+      svg
+        .select('g')
+        .select('.tempLine')
+        .attr('x1', d.x)
+        .attr('y1', d.y - navbarHeight)
+        .style('opacity', '1')
+
+      tempPairingNodes.startNodeID = d.id
+      tempPairingNodes.startX = d.x
+      tempPairingNodes.startY = d.y
+      console.log('노드에서 마우스 다운중:')
+    })
+    .on('mouseup', (d) => {
+      console.log('이 노드에서 마우스 업이 수행됨:', d)
+      tempPairingNodes.endNodeID = d.id
+      tempPairingNodes.endX = d.x
+      tempPairingNodes.endY = d.y
+      // 연결된 노드를 데이터에 반영
+      if (
+        tempPairingNodes.startNodeID !== tempPairingNodes.endNodeID &&
+        tempPairingNodes.startX !== tempPairingNodes.endX &&
+        tempPairingNodes.startY !== tempPairingNodes.endY &&
+        !linkList.find(
+          (element) =>
+            element.startNodeID === tempPairingNodes.startNodeID &&
+            element.endNodeID === tempPairingNodes.endNodeID
+        )
+      ) {
+        tempPairingNodes.id = `link${uid(20)}`
+        linkList.push({ ...tempPairingNodes })
+        updateLink()
+        //setTimeout(linkList.push({ ...tempPairingNodes }), 0)
+        console.log('노드끼리 연결됨:', tempPairingNodes)
+      }
+
+      // 데이터에 반영됐으면 임시 페어링을 초기화.
+      tempPairingNodes = {}
+      //console.log('노드 페어링 초기화:', tempPairingNodes)
+      //console.log(':', linkList)
+    })
     .style('cursor', 'pointer')
 
   labelGroup
@@ -178,25 +238,41 @@ function updateGraph(container, testingSetter, dispatch) {
       return d.name
     })
     .style('user-select', 'none')
-    .style('background-color', '#ffffff')
+    .style(
+      'text-shadow',
+      '-3px 0 #F2F1F6, 0 3px #F2F1F6, 3px 0 #F2F1F6, 0 -3px #F2F1F6'
+    )
 
-  svg.on('dblclick', () => {
-    const createdNode = {
-      id: `node${uid(20)}`,
-      name: '새로운 노드',
-      x: d3.event.pageX,
-      y: d3.event.pageY,
-      radius: nodeRadius,
-      body: '새로운 내용',
-      tag: '프론트엔드',
-      fillColor: '#00bebe',
-      parentNodeID: [],
-      childNodeID: [],
-    }
-    nodeList = [...nodeList, createdNode]
-    reduxStore.dispatch(createNode(nodeList))
-    updateNode()
-  })
+  svg
+    .on('dblclick', () => {
+      const createdNode = {
+        id: `node${uid(20)}`,
+        name: '새로운 노드',
+        x: d3.event.pageX,
+        y: d3.event.pageY,
+        radius: nodeRadius,
+        body: '새로운 내용',
+        tag: '프론트엔드',
+        fillColor: '#00bebe',
+        parentNodeID: [],
+        childNodeID: [],
+      }
+      nodeList = [...nodeList, createdNode]
+      reduxStore.dispatch(createNode(nodeList))
+      updateNode()
+    })
+    .on('mousemove', (d) => {
+      svg
+        .select('g')
+        .select('.tempLine')
+        .attr('x2', d3.event.pageX)
+        .attr('y2', d3.event.pageY)
+      console.log(':', svg.select('g').select('.tempLine'))
+      // console.log('마우스 움직이는 중. x2,y2:', d3.event.pageX, d3.event.pageY)
+    })
+    .on('mouseup', (d) => {
+      svg.select('.tempLine').style('opacity', '0')
+    })
 
   function updateNode() {
     nodeGroup
@@ -223,6 +299,47 @@ function updateGraph(container, testingSetter, dispatch) {
 
         dispatch(selectNode(previousNodeList, nextNodeList, d))
       })
+      .on('mousedown', (d) => {
+        svg
+          .select('g')
+          .select('.tempLine')
+          .attr('x1', d.x)
+          .attr('y1', d.y - navbarHeight)
+          .style('opacity', '1')
+
+        tempPairingNodes.startNodeID = d.id
+        tempPairingNodes.startX = d.x
+        tempPairingNodes.startY = d.y
+        console.log('노드에서 마우스 다운중:')
+      })
+      .on('mouseup', (d) => {
+        console.log('이 노드에서 마우스 업이 수행됨:', d)
+        tempPairingNodes.endNodeID = d.id
+        tempPairingNodes.endX = d.x
+        tempPairingNodes.endY = d.y
+        // 연결된 노드를 데이터에 반영
+        if (
+          tempPairingNodes.startNodeID !== tempPairingNodes.endNodeID &&
+          tempPairingNodes.startX !== tempPairingNodes.endX &&
+          tempPairingNodes.startY !== tempPairingNodes.endY &&
+          !linkList.find(
+            (element) =>
+              element.startNodeID === tempPairingNodes.startNodeID &&
+              element.endNodeID === tempPairingNodes.endNodeID
+          )
+        ) {
+          tempPairingNodes.id = `link${uid(20)}`
+          linkList.push({ ...tempPairingNodes })
+          updateLink()
+          //setTimeout(linkList.push({ ...tempPairingNodes }), 0)
+          console.log('노드끼리 연결됨:', tempPairingNodes)
+        }
+
+        // 데이터에 반영됐으면 임시 페어링을 초기화.
+        tempPairingNodes = {}
+        //console.log('노드 페어링 초기화:', tempPairingNodes)
+        //console.log(':', linkList)
+      })
       .style('cursor', 'pointer')
 
     labelGroup
@@ -241,9 +358,29 @@ function updateGraph(container, testingSetter, dispatch) {
       .text((d) => {
         return d.name
       })
+      .style(
+        'text-shadow',
+        '-3px 0 #F2F1F6, 0 3px #F2F1F6, 3px 0 #F2F1F6, 0 -3px #F2F1F6'
+      )
       .style('user-select', 'none')
-
     console.log('노드가 갱신됨.')
   }
+  function updateLink() {
+    linkGroup
+      .selectAll('line')
+      .data(linkList)
+      .join('line')
+      .attr('x1', (d) => d.startX)
+      .attr('y1', (d) => d.startY - navbarHeight)
+      .attr('x2', (d) => d.endX)
+      .attr('y2', (d) => d.endY - navbarHeight)
+      .attr('class', (d) => d.id)
+      .style('stroke', linkColor)
+      .style('stroke-width', linkWidth)
+      .attr('marker-end', 'url(#end-arrow)')
+    reduxStore.dispatch(createLink(linkList))
+    console.log('링크가 갱신됨')
+  }
+
   console.log('그래프가 업데이트됨.')
 }
