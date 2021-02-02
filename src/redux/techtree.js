@@ -121,11 +121,11 @@ export default function techtree(state = initialState, action) {
         isEditingDocument: true,
       }
     case FINISH_DOCU_EDIT:
-      const changingIndex = state.techtreeData.nodeList.findIndex(
+      const changingIndex = state.nodeList.findIndex(
         (element) => action.nodeID === element.id
       )
-      const changingNode = state.techtreeData.nodeList[changingIndex]
-      const newNodeList = state.techtreeData.nodeList
+      const changingNode = state.nodeList[changingIndex]
+      const newNodeList = state.nodeList
       newNodeList[changingIndex] = {
         ...changingNode,
         id: action.nodeID,

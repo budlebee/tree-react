@@ -78,6 +78,7 @@ function initGraph(
   const svg = d3
     .select(container)
     .append('svg')
+    .attr('id', 'techtreeContainer')
     .attr('width', width)
     .attr('height', height)
 
@@ -95,11 +96,13 @@ function initGraph(
   const nodeGroup = svg.append('g').attr('class', 'nodes')
   const labelGroup = svg.append('g').attr('class', 'labels')
 
-  //return {
-  //  nodes: () => {
-  //    return svg.node()
-  //  },
-  //}
+  const offsetElement = document.getElementById('techtreeContainer')
+  console.log(':', offsetElement)
+  const clientRect = offsetElement.getBoundingClientRect()
+  const relativeTop = clientRect.top
+  const scrolledTopLength = window.pageYOffset
+  const absoluteYPosition = scrolledTopLength + relativeTop
+  console.log('절대 y좌표: ', absoluteYPosition)
 }
 
 function updateGraph(container, testingSetter, dispatch) {
@@ -110,6 +113,14 @@ function updateGraph(container, testingSetter, dispatch) {
 
   const width = 600
   const height = 600
+
+  const offsetElement = document.getElementById('techtreeContainer')
+  const clientRect = offsetElement.getBoundingClientRect()
+  const relativeTop = clientRect.top
+  const relativeLeft = clientRect.left
+  const scrolledTopLength = window.pageYOffset
+  const absoluteYPosition = scrolledTopLength + relativeTop
+  const absoluteXPostion = relativeLeft
 
   let nodeList = reduxStore.getState().techtree.nodeList
   let linkList = reduxStore.getState().techtree.linkList
@@ -149,10 +160,10 @@ function updateGraph(container, testingSetter, dispatch) {
     .selectAll('line')
     .data(linkList)
     .join('line')
-    .attr('x1', (d) => d.startX)
-    .attr('y1', (d) => d.startY)
-    .attr('x2', (d) => d.endX)
-    .attr('y2', (d) => d.endY)
+    .attr('x1', (d) => d.startX - absoluteXPostion)
+    .attr('y1', (d) => d.startY - absoluteYPosition)
+    .attr('x2', (d) => d.endX - absoluteXPostion)
+    .attr('y2', (d) => d.endY - absoluteYPosition)
     .attr('class', (d) => d.id)
     .style('stroke', linkColor)
     .style('stroke-width', linkWidth)
@@ -165,10 +176,10 @@ function updateGraph(container, testingSetter, dispatch) {
     .attr('r', (d) => d.radius)
     .style('fill', (d) => d.fillColor)
     .attr('cx', (d) => {
-      return d.x
+      return d.x - absoluteXPostion
     })
     .attr('cy', (d) => {
-      return d.y
+      return d.y - absoluteYPosition
     })
     .attr('class', (d) => {
       return d.id
@@ -182,8 +193,8 @@ function updateGraph(container, testingSetter, dispatch) {
       svg
         .select('g')
         .select('.tempLine')
-        .attr('x1', d.x)
-        .attr('y1', d.y - navbarHeight)
+        .attr('x1', d.x - absoluteXPostion)
+        .attr('y1', d.y - absoluteYPosition)
         .style('opacity', '1')
 
       tempPairingNodes.startNodeID = d.id
@@ -226,10 +237,10 @@ function updateGraph(container, testingSetter, dispatch) {
     .data(nodeList)
     .join('text')
     .attr('x', (d) => {
-      return d.x
+      return d.x - absoluteXPostion
     })
     .attr('y', (d) => {
-      return d.y - navbarHeight + nodeRadius * 2
+      return d.y - absoluteYPosition + nodeRadius * 2
     })
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
@@ -265,9 +276,9 @@ function updateGraph(container, testingSetter, dispatch) {
       svg
         .select('g')
         .select('.tempLine')
-        .attr('x2', d3.event.pageX)
-        .attr('y2', d3.event.pageY)
-      console.log(':', svg.select('g').select('.tempLine'))
+        .attr('x2', d3.event.pageX - absoluteXPostion)
+        .attr('y2', d3.event.pageY - absoluteYPosition)
+      //console.log(':', svg.select('g').select('.tempLine'))
       // console.log('마우스 움직이는 중. x2,y2:', d3.event.pageX, d3.event.pageY)
     })
     .on('mouseup', (d) => {
@@ -285,10 +296,10 @@ function updateGraph(container, testingSetter, dispatch) {
       //.style('stroke', selectedNodeHighlightColor)
       .style('fill', (d) => d.fillColor)
       .attr('cx', (d) => {
-        return d.x
+        return d.x - absoluteXPostion
       })
       .attr('cy', (d) => {
-        return d.y - navbarHeight
+        return d.y - absoluteYPosition
       })
       .attr('class', (d) => {
         return d.id
@@ -303,8 +314,8 @@ function updateGraph(container, testingSetter, dispatch) {
         svg
           .select('g')
           .select('.tempLine')
-          .attr('x1', d.x)
-          .attr('y1', d.y - navbarHeight)
+          .attr('x1', d.x - absoluteXPostion)
+          .attr('y1', d.y - absoluteYPosition)
           .style('opacity', '1')
 
         tempPairingNodes.startNodeID = d.id
@@ -347,10 +358,10 @@ function updateGraph(container, testingSetter, dispatch) {
       .data(nodeList)
       .join('text')
       .attr('x', (d) => {
-        return d.x
+        return d.x - absoluteXPostion
       })
       .attr('y', (d) => {
-        return d.y - navbarHeight + nodeRadius * 2
+        return d.y - absoluteYPosition + nodeRadius * 2
       })
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
@@ -370,10 +381,10 @@ function updateGraph(container, testingSetter, dispatch) {
       .selectAll('line')
       .data(linkList)
       .join('line')
-      .attr('x1', (d) => d.startX)
-      .attr('y1', (d) => d.startY - navbarHeight)
-      .attr('x2', (d) => d.endX)
-      .attr('y2', (d) => d.endY - navbarHeight)
+      .attr('x1', (d) => d.startX - absoluteXPostion)
+      .attr('y1', (d) => d.startY - absoluteYPosition)
+      .attr('x2', (d) => d.endX - absoluteXPostion)
+      .attr('y2', (d) => d.endY - absoluteYPosition)
       .attr('class', (d) => d.id)
       .style('stroke', linkColor)
       .style('stroke-width', linkWidth)
