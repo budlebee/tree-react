@@ -1,8 +1,8 @@
 import { dispatch } from 'd3'
 
 const initialState = {
-  previousNodeList: [],
-  nextNodeList: [],
+  previousNodeList: [{ name: '' }],
+  nextNodeList: [{ name: '' }],
   selectedNode: {
     name: '지식트리를 꾸며보세요',
     body: '마크다운과 코드블럭, 사진첨부도 가능합니다',

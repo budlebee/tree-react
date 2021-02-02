@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { techtreeDataList } from '../lib/dummyData'
 
 import { finishDocuEdit, selectNode, readTechtree } from '../redux/techtree'
+import { returnPreviousNodeList, returnNextNodeList } from '../lib/functions'
 
 // 테스팅을 위해 임의 할당
 const techtreeDummyData = techtreeDataList[0]
@@ -16,9 +17,15 @@ const techtreeDummyData = techtreeDataList[0]
 export default function TechtreeDetailPage({ match }) {
   const dispatch = useDispatch()
 
-  const { selectedNode } = useSelector((state) => {
-    return { selectedNode: state.techtree.selectedNode }
-  })
+  const { selectedNode, previousNodeList, nextNodeList } = useSelector(
+    (state) => {
+      return {
+        selectedNode: state.techtree.selectedNode,
+        previousNodeList: state.techtree.previousNodeList,
+        nextNodeList: state.techtree.nextNodeList,
+      }
+    }
+  )
 
   const { techtreeData, nodeList, linkList, techtreeTitle } = useSelector(
     (state) => {
@@ -85,6 +92,54 @@ export default function TechtreeDetailPage({ match }) {
             <>
               <div>{documentTitle}</div>
               <MarkdownRenderer text={documentText} />
+              {previousNodeList.length !== 0 ? <div>앞선 노드</div> : ''}
+              {previousNodeList.map((node) => {
+                return (
+                  <button
+                    onClick={() => {
+                      const newPreviousNodeList = returnPreviousNodeList(
+                        linkList,
+                        nodeList,
+                        node
+                      )
+                      const newNextNodeList = returnNextNodeList(
+                        linkList,
+                        nodeList,
+                        node
+                      )
+                      dispatch(
+                        selectNode(newPreviousNodeList, newNextNodeList, node)
+                      )
+                    }}
+                  >
+                    {node?.name}
+                  </button>
+                )
+              })}
+              {nextNodeList.length !== 0 ? <div>다음 노드</div> : ''}
+              {nextNodeList.map((node) => {
+                return (
+                  <button
+                    onClick={() => {
+                      const newPreviousNodeList = returnPreviousNodeList(
+                        linkList,
+                        nodeList,
+                        node
+                      )
+                      const newNextNodeList = returnNextNodeList(
+                        linkList,
+                        nodeList,
+                        node
+                      )
+                      dispatch(
+                        selectNode(newPreviousNodeList, newNextNodeList, node)
+                      )
+                    }}
+                  >
+                    {node?.name}
+                  </button>
+                )
+              })}
             </>
           )}
           {isEditingDocument ? (
@@ -102,6 +157,51 @@ export default function TechtreeDetailPage({ match }) {
       </DoubleSideLayout>
     </MainWrapper>
   )
+}
+
+function PreviousNodeButtonList({ linkList, nodeList, previousNodeList }) {
+  const dispatch = useDispatch()
+  const PreviousNodeButtonList = previousNodeList.map((node) => {
+    return (
+      <button
+        onClick={() => {
+          const newPreviousNodeList = returnPreviousNodeList(
+            linkList,
+            nodeList,
+            node
+          )
+          const newNextNodeList = returnNextNodeList(linkList, nodeList, node)
+          dispatch(selectNode(newPreviousNodeList, newNextNodeList, node))
+        }}
+      >
+        {node?.name}
+      </button>
+    )
+  })
+  return <PreviousNodeButtonList></PreviousNodeButtonList>
+}
+
+function NextNodeButtonList({ linkList, nodeList, nextNodeList }) {
+  const dispatch = useDispatch()
+  {
+    nextNodeList.forEach((node) => {
+      return (
+        <button
+          onClick={() => {
+            const newPreviousNodeList = returnPreviousNodeList(
+              linkList,
+              nodeList,
+              node
+            )
+            const newNextNodeList = returnNextNodeList(linkList, nodeList, node)
+            dispatch(selectNode(newPreviousNodeList, newNextNodeList, node))
+          }}
+        >
+          {node?.name}
+        </button>
+      )
+    })
+  }
 }
 
 const DoubleSideLayout = styled.div`
