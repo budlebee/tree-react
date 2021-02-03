@@ -6,7 +6,12 @@ import { colorPalette } from '../lib/styleGuide'
 import styled from 'styled-components'
 
 import { returnPreviousNodeList, returnNextNodeList } from '../lib/functions'
-import { selectNode, createNode, createLink } from '../redux/techtree'
+import {
+  selectNode,
+  createNode,
+  createLink,
+  deleteNode,
+} from '../redux/techtree'
 import { useDispatch, useSelector } from 'react-redux'
 import { reduxStore } from '../index'
 
@@ -105,6 +110,7 @@ function initGraph(
   console.log('절대 y좌표: ', absoluteYPosition)
 }
 
+// 그래프가 갱신될때 호출되는 함수
 function updateGraph(container, testingSetter, dispatch) {
   const nodeRadius = 15
   const navbarHeight = 0
@@ -169,6 +175,7 @@ function updateGraph(container, testingSetter, dispatch) {
     .style('stroke-width', linkWidth)
     .attr('marker-end', 'url(#end-arrow)')
 
+  // 노드 생성
   nodeGroup
     .selectAll('circle')
     .data(nodeList)
@@ -190,13 +197,13 @@ function updateGraph(container, testingSetter, dispatch) {
       dispatch(selectNode(previousNodeList, nextNodeList, d))
     })
     .on('mousedown', (d) => {
+      // 여기서 분기처리해야될듯.
       svg
         .select('g')
         .select('.tempLine')
         .attr('x1', d.x - absoluteXPostion)
         .attr('y1', d.y - absoluteYPosition)
         .style('opacity', '1')
-
       tempPairingNodes.startNodeID = d.id
       tempPairingNodes.startX = d.x
       tempPairingNodes.startY = d.y
@@ -221,14 +228,32 @@ function updateGraph(container, testingSetter, dispatch) {
         tempPairingNodes.id = `link${uid(20)}`
         linkList.push({ ...tempPairingNodes })
         updateLink()
-        //setTimeout(linkList.push({ ...tempPairingNodes }), 0)
         console.log('노드끼리 연결됨:', tempPairingNodes)
       }
-
       // 데이터에 반영됐으면 임시 페어링을 초기화.
       tempPairingNodes = {}
-      //console.log('노드 페어링 초기화:', tempPairingNodes)
-      //console.log(':', linkList)
+    })
+    .style('cursor', 'pointer')
+
+  // 노드 삭제용 버튼 만들기
+  nodeGroup
+    .selectAll('rect')
+    .data(nodeList)
+    .join('rect')
+    .attr('width', (d) => d.radius)
+    .attr('height', (d) => d.radius)
+    .style('fill', (d) => d.fillColor)
+    .attr('x', (d) => {
+      return d.x - absoluteXPostion
+    })
+    .attr('y', (d) => {
+      return d.y - absoluteYPosition - nodeRadius * 2
+    })
+    .attr('class', (d) => {
+      return d.id
+    })
+    .on('click', (d) => {
+      dispatch(deleteNode(nodeList, linkList, d))
     })
     .style('cursor', 'pointer')
 

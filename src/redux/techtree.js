@@ -1,5 +1,3 @@
-import { dispatch } from 'd3'
-
 const initialState = {
   previousNodeList: [{ name: '' }],
   nextNodeList: [{ name: '' }],
@@ -60,6 +58,7 @@ const FINISH_DOCU_EDIT = 'techtree/FINISH_DOCU_EDIT'
 const SELECT_NODE = 'techtree/SELECT_NODE'
 
 const CREATE_NODE = 'techtree/CREATE_NODE'
+const DELETE_NODE = 'techtree/DELETE_NODE'
 const CREATE_LINK = 'techtree/CREATE_LINK'
 
 const READ_TECHTREE_DATA_TRY = 'techtree/READ_TECHTREE_DATA_TRY'
@@ -80,6 +79,36 @@ export const selectNode = (previousNodeList, nextNodeList, node) => {
 }
 export const createNode = (nodeList) => {
   return { type: CREATE_NODE, nodeList: nodeList }
+}
+export const deleteNode = (nodeList, linkList, node) => {
+  // 해당 노드와 연관된 링크를 linkList에서 훑어가며 다 지워버리고,
+  // nodeList에서 해당되는 노드를 지워버린다.
+
+  const deletionBinaryList = linkList.map((link) => {
+    if (link.startNodeID === node.id) {
+      return 0
+    } else if (link.endNodeID === node.id) {
+      return 0
+    } else {
+      return 1
+    }
+  })
+  // 이러면 linkList 랑 원소의 갯수가 같은 0101010 배열이 나올것.
+  const newLinkList = linkList.filter((link, index) => {
+    return deletionBinaryList[index] === 1
+  })
+
+  const deleteNodeIndex = nodeList.findIndex((ele) => {
+    return ele.id === node.id
+  })
+
+  const newNodeList = nodeList.filter((ele, index) => {
+    return ele.id !== node.id
+  })
+  // .splice 는 원본배열을 조작하는것. 반환값은 원본배열에서 잘라낸것만 반환한다.
+  //nodeList.splice(deleteNodeIndex, 1)
+
+  return { type: DELETE_NODE, newNodeList, newLinkList }
 }
 export const createLink = (linkList) => {
   return { type: CREATE_LINK, linkList: linkList }
@@ -110,6 +139,17 @@ export default function techtree(state = initialState, action) {
         },
         nodeList: action.nodeList,
       }
+    case DELETE_NODE:
+      return {
+        ...state,
+        nodeList: action.newNodeList,
+        linkList: action.newLinkList,
+        techtreeData: {
+          ...state.techtreeData,
+          nodeList: action.newNodeList,
+          linkList: action.newLinkList,
+        },
+      }
     case EDIT_TECHTREE:
       return {
         ...state,
@@ -132,8 +172,6 @@ export default function techtree(state = initialState, action) {
         name: action.nodeName,
         body: action.nodeBody,
       }
-      console.log('action.nodeName: ', action.nodeName)
-      console.log('action.nodeBody: ', action.nodeBody)
       return {
         ...state,
         techtreeData: { ...state.techtreeData, nodeList: newNodeList },
@@ -142,8 +180,6 @@ export default function techtree(state = initialState, action) {
         isEditingTechtree: false,
       }
     case SELECT_NODE:
-      console.log('이전 노드 리스트: ', action.previousNodeList)
-      console.log('이후 노드 리스트: ', action.nextNodeList)
       return {
         ...state,
         selectedNode: action.node,
