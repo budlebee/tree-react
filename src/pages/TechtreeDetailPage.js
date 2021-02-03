@@ -6,13 +6,13 @@ import MarkdownRenderer from '../components/MarkdownRenderer'
 import TechtreeMap from '../components/TechtreeMap'
 
 import styled from 'styled-components'
-import { techtreeDataList } from '../lib/dummyData'
+import { dummyTechtreeDataList } from '../lib/dummyData'
 
 import { finishDocuEdit, selectNode, readTechtree } from '../redux/techtree'
 import { returnPreviousNodeList, returnNextNodeList } from '../lib/functions'
 
 // 테스팅을 위해 임의 할당
-const techtreeDummyData = techtreeDataList[0]
+const techtreeDummyData = dummyTechtreeDataList[0]
 
 export default function TechtreeDetailPage({ match }) {
   const dispatch = useDispatch()

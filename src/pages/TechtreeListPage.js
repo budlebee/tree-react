@@ -1,14 +1,21 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import MainWrapper from '../wrappers/MainWrapper'
 import TechtreeThumbnail from '../components/TechtreeThumbnail'
 import styled from 'styled-components'
-import { techtreeDataList } from '../lib/dummyData'
+import { dummyTechtreeDataList } from '../lib/dummyData'
 import techtree from '../redux/techtree'
 
 export default function TechtreeListPage() {
+  const [techtreeDataList, setTechtreeDataList] = useState([])
+
+  useEffect(() => {
+    setTechtreeDataList(dummyTechtreeDataList)
+  }, [techtreeDataList])
+
   return (
     <MainWrapper>
       <GridContainer>
+        <div>새로운 테크트리 심기</div>
         {techtreeDataList.map((techtreeData, index) => {
           return (
             <TechtreeThumbnail

@@ -1,4 +1,4 @@
-export const techtreeDataList = [
+export const dummyTechtreeDataList = [
   {
     id: '1234567890qwertyuiop1234',
     title: '실험용 테크트리1',
@@ -39,6 +39,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop1235',
     title: '실험용 테크트리2',
     nodeList: [
       {
@@ -55,7 +56,7 @@ export const techtreeDataList = [
         id: 'bbdfasdfasdfasdfasdfasdf',
         name: '두번째 노드',
         x: 300,
-        y: 300,
+        y: 400,
         radius: 15,
         body: 'x랑 y의 값은 둘다 300임. 두번째 노드임',
         tag: '백엔드',
@@ -69,7 +70,7 @@ export const techtreeDataList = [
         startX: 150,
         startY: 150,
         endX: 300,
-        endY: 300,
+        endY: 400,
         id: 'ccdfasdfasdfasdfasdfasdf',
         left: false,
         right: true,
@@ -77,6 +78,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop1236',
     title: '실험용 테크트리3',
     nodeList: [
       {
@@ -115,6 +117,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop1237',
     title: '실험용 테크트리4',
     nodeList: [
       {
@@ -153,6 +156,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop1238',
     title: '실험용 테크트리5',
     nodeList: [
       {
@@ -191,6 +195,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop1239',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -229,6 +234,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop1230',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -267,6 +273,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop1233',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -305,6 +312,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop1232',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -343,6 +351,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop1231',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -381,6 +390,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123a',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -419,6 +429,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123b',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -457,6 +468,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123c',
     title: '실험용 테크트리5',
     nodeList: [
       {
@@ -495,6 +507,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123d',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -533,6 +546,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123e',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -571,6 +585,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123f',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -609,6 +624,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123g',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -647,6 +663,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123h',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -685,6 +702,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123i',
     title: '실험용 테크트리',
     nodeList: [
       {
@@ -723,6 +741,7 @@ export const techtreeDataList = [
     ],
   },
   {
+    id: '1234567890qwertyuiop123j',
     title: '실험용 테크트리',
     nodeList: [
       {

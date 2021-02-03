@@ -24,21 +24,26 @@ export default React.memo(function TechtreeThumbnail({
 
   React.useEffect(() => {
     if (containerRef.current) {
-      runForceGraph(containerRef.current, nodeList, linkList)
+      runForceGraph(containerRef.current, nodeList, linkList, techtreeID)
     }
   }, [])
 
   return (
     <TechtreeThumbnailCard>
       <Link to={`/techtree/${techtreeID}`}>
-        <TechtreeThumbnailBlock ref={containerRef} />
+        <TechtreeThumbnailBlock ref={containerRef} className={techtreeID} />
         <div>{techtreeTitle}</div>
       </Link>
     </TechtreeThumbnailCard>
   )
 })
 
-function runForceGraph(container, originalNodeList, originalLinkList) {
+function runForceGraph(
+  container,
+  originalNodeList,
+  originalLinkList,
+  techtreeID
+) {
   // 데이터 저장 원칙 : navbar 높이때문에 Y좌표는 보정이 필요함.
   // 하지만 보정을 가한 좌표를 저장하지 않는다. 순수한 좌표를 저장해야함.
   // 그 좌표에 대해 렌더링하는 시점에만 보정을 가한다.
@@ -60,6 +65,14 @@ function runForceGraph(container, originalNodeList, originalLinkList) {
     .append('svg')
     .attr('height', height)
     .attr('width', width)
+    .attr('viewBox', `${width / 3} ${height / 3} ${width} ${height}`)
+
+  const clientRect = container.getBoundingClientRect()
+  const relativeTop = clientRect.top
+  const relativeLeft = clientRect.left
+  const scrolledTopLength = window.pageYOffset
+  const absoluteYPosition = scrolledTopLength + relativeTop
+  const absoluteXPostion = relativeLeft
 
   // 화살표 마커
   svg
@@ -116,7 +129,7 @@ function runForceGraph(container, originalNodeList, originalLinkList) {
       return d.x
     })
     .attr('y', (d) => {
-      return d.y - navbarHeight + nodeRadius * 2
+      return d.y + nodeRadius * 2
     })
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')

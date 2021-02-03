@@ -2,7 +2,7 @@ import React from 'react'
 import MainWrapper from '../wrappers/MainWrapper'
 import TechtreeThumbnail from '../components/TechtreeThumbnail'
 import styled from 'styled-components'
-import { techtreeDataList } from '../lib/dummyData'
+import { dummyTechtreeDataList } from '../lib/dummyData'
 import techtree from '../redux/techtree'
 
 // List 페이지랑 똑같음. 단지 내가 작성한 테크트리만 모여있다는게 차이점.
@@ -11,7 +11,7 @@ export default function UserInfoPage() {
   return (
     <MainWrapper>
       <GridContainer>
-        {techtreeDataList.map((techtreeData) => {
+        {dummyTechtreeDataList.map((techtreeData) => {
           return (
             <TechtreeThumbnail
               nodeList={techtreeData.nodeList}
