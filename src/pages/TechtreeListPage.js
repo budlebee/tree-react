@@ -9,13 +9,14 @@ export default function TechtreeListPage() {
   return (
     <MainWrapper>
       <GridContainer>
-        {techtreeDataList.map((techtreeData) => {
+        {techtreeDataList.map((techtreeData, index) => {
           return (
             <TechtreeThumbnail
               nodeList={techtreeData.nodeList}
               linkList={techtreeData.linkList}
               techtreeTitle={techtreeData.title}
               techtreeID={techtreeData.id}
+              key={index}
             />
           )
         })}

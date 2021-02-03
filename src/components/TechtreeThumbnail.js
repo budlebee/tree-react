@@ -5,11 +5,11 @@ import { colorPalette } from '../lib/styleGuide'
 import styled from 'styled-components'
 
 const TechtreeThumbnailBlock = styled.div`
-  border-radius: 10px;
+  border-radius: 1px;
   border: 1px solid ${colorPalette.cyan5};
 `
 const TechtreeThumbnailCard = styled.div`
-  border-radius: 10px;
+  border-radius: 1px;
   border: 1px solid ${colorPalette.cyan5};
   width: '100%';
 `
@@ -49,8 +49,8 @@ function runForceGraph(container, originalNodeList, originalLinkList) {
   const linkWidth = '2.5px'
   const linkColor = '#000000'
 
-  const width = `inherit`
-  const height = `inherit`
+  const width = `300`
+  const height = `300`
 
   let nodeList = originalNodeList
   let linkList = originalLinkList

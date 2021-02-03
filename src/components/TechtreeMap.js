@@ -96,6 +96,7 @@ function initGraph(
     .style('stroke-width', linkWidth)
     .attr('marker-end', 'url(#end-arrow)')
     .style('opacity', '0')
+    .attr('display', 'none')
 
   const linkGroup = svg.append('g').attr('class', 'links')
   const nodeGroup = svg.append('g').attr('class', 'nodes')
@@ -204,6 +205,7 @@ function updateGraph(container, testingSetter, dispatch) {
         .attr('x1', d.x - absoluteXPostion)
         .attr('y1', d.y - absoluteYPosition)
         .style('opacity', '1')
+        .attr('display', 'inline')
       tempPairingNodes.startNodeID = d.id
       tempPairingNodes.startX = d.x
       tempPairingNodes.startY = d.y
@@ -211,6 +213,7 @@ function updateGraph(container, testingSetter, dispatch) {
     })
     .on('mouseup', (d) => {
       console.log('이 노드에서 마우스 업이 수행됨:', d)
+
       tempPairingNodes.endNodeID = d.id
       tempPairingNodes.endX = d.x
       tempPairingNodes.endY = d.y
@@ -223,7 +226,8 @@ function updateGraph(container, testingSetter, dispatch) {
           (element) =>
             element.startNodeID === tempPairingNodes.startNodeID &&
             element.endNodeID === tempPairingNodes.endNodeID
-        )
+        ) &&
+        d3.select('.tempLine').attr('x1') > 0
       ) {
         tempPairingNodes.id = `link${uid(20)}`
         linkList.push({ ...tempPairingNodes })
@@ -362,7 +366,8 @@ function updateGraph(container, testingSetter, dispatch) {
             (element) =>
               element.startNodeID === tempPairingNodes.startNodeID &&
               element.endNodeID === tempPairingNodes.endNodeID
-          )
+          ) &&
+          d3.select('.tempLine').attr('x1') > 0
         ) {
           tempPairingNodes.id = `link${uid(20)}`
           linkList.push({ ...tempPairingNodes })

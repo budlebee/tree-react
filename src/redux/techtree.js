@@ -10,7 +10,7 @@ const initialState = {
   nodeList: [
     {
       id: 'asdfasdfasdfasdfasdfasdf',
-      name: '첫번째 노드',
+      name: 'html',
       x: 150,
       y: 150,
       radius: 15,
@@ -20,9 +20,9 @@ const initialState = {
     },
     {
       id: 'bbdfasdfasdfasdfasdfasdf',
-      name: '두번째 노드',
+      name: 'css',
       x: 300,
-      y: 300,
+      y: 200,
       radius: 15,
       body: 'x랑 y의 값은 둘다 300임. 두번째 노드임',
       tag: '백엔드',
@@ -36,7 +36,7 @@ const initialState = {
       startX: 150,
       startY: 150,
       endX: 300,
-      endY: 300,
+      endY: 200,
       id: 'ccdfasdfasdfasdfasdfasdf',
       left: false,
       right: true,
@@ -53,6 +53,8 @@ const initialState = {
 // define ACTION types
 const EDIT_DOCUMENT = 'techtree/EDIT_DOCUMENT'
 const EDIT_TECHTREE = 'techtree/EDIT_TECHTREE'
+
+const FINISH_TECHTREE_EDIT = 'techtree/FINISH_TECHTREE_EDIT'
 const FINISH_DOCU_EDIT = 'techtree/FINISH_DOCU_EDIT'
 
 const SELECT_NODE = 'techtree/SELECT_NODE'
