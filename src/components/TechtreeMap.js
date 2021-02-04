@@ -183,7 +183,7 @@ function updateGraph(container, testingSetter, dispatch) {
     .append('rect')
     .attr('width', 10)
     .attr('height', 10)
-    .attr('x', width / 2 - 10)
+    .attr('x', width - 10)
     .attr('y', 10)
     .style('fill', 'red')
     .attr('display', 'inline')
@@ -193,8 +193,6 @@ function updateGraph(container, testingSetter, dispatch) {
       } else {
         reduxStore.dispatch(editTechtree())
       }
-
-      console.log('그래프 수정 토글이 클릭됨: ', editMode)
       initNode()
       initLink()
       initLabel()
@@ -256,6 +254,8 @@ function updateGraph(container, testingSetter, dispatch) {
 
   // 노드 생성
   function initNode() {
+    const nodes = nodeGroup.selectAll('circle').data(nodeList).join('circle')
+
     nodeGroup
       .selectAll('circle')
       .data(nodeList)
@@ -283,11 +283,8 @@ function updateGraph(container, testingSetter, dispatch) {
         const nextNodeList = returnNextNodeList(linkList, nodeList, d)
         dispatch(selectNode(previousNodeList, nextNodeList, d))
       })
+      .style('cursor', 'pointer')
       .on('mousedown', (d) => {
-        // 여기서 분기처리해야될듯.
-        // 꾹 누르고, 마우스 좌표가 2.5초이상 가만히 있다면
-        // 그때는 삭제버튼들의 display 속성을 inline 으로 바꿈.
-        //
         svg
           .select('g')
           .select('.tempLine')
@@ -298,11 +295,8 @@ function updateGraph(container, testingSetter, dispatch) {
         tempPairingNodes.startNodeID = d.id
         tempPairingNodes.startX = d.x
         tempPairingNodes.startY = d.y
-        console.log('노드에서 마우스 다운중:')
       })
       .on('mouseup', (d) => {
-        console.log('이 노드에서 마우스 업이 수행됨:', d)
-
         tempPairingNodes.endNodeID = d.id
         tempPairingNodes.endX = d.x
         tempPairingNodes.endY = d.y
@@ -324,11 +318,44 @@ function updateGraph(container, testingSetter, dispatch) {
           updateLink()
           console.log('노드끼리 연결됨:', tempPairingNodes)
         }
-
         svg.select('g').select('.tempLine').attr('x1', 0).attr('y1', 0)
         tempPairingNodes = {}
       })
-      .style('cursor', 'pointer')
+
+    /*
+      .call(
+        d3
+          .drag()
+          .on('start', (d) => {
+            d3.select(this).raise().classed('active', true)
+          })
+          .on('drag', (node) => {
+            const newLinkList = linkList.map((link) => {
+              if (link.startNodeID === node.id) {
+                return { ...link, startX: d3.event.x, startY: d3.event.y }
+              } else if (link.endNodeID === node.id) {
+                return { ...link, endX: d3.event.x, endY: d3.event.y }
+              } else {
+                return link
+              }
+            })
+            linkList = newLinkList
+            initLink()
+            d3.select(this).attr('cx', d3.event.x).attr('cy', d3.event.y)
+            node.x = d3.event.x
+            node.y = d3.event.y
+            initNode()
+            initLabel()
+          })
+          .on('end', function (node) {
+            d3.select(this).classed('active', false)
+            node.x = d3.event.x
+            node.y = d3.event.y
+            updateNode()
+            updateLink()
+          })
+      )
+      */
 
     // 노드 삭제용 버튼 만들기
     nodeGroup
@@ -403,8 +430,6 @@ function updateGraph(container, testingSetter, dispatch) {
         parentNodeID: [],
         childNodeID: [],
       }
-      console.log('d3.event.pageX:', d3.event.pageX)
-      console.log('d3.event.pageY:', d3.event.pageY)
       nodeList = [...nodeList, createdNode]
       reduxStore.dispatch(createNode(nodeList))
       updateNode()
@@ -415,12 +440,16 @@ function updateGraph(container, testingSetter, dispatch) {
         .select('.tempLine')
         .attr('x2', d3.event.pageX - absoluteXPosition)
         .attr('y2', d3.event.pageY - absoluteYPosition)
-      //console.log(':', svg.select('g').select('.tempLine'))
-      // console.log('마우스 움직이는 중. x2,y2:', d3.event.pageX, d3.event.pageY)
     })
     .on('mouseup', (d) => {
       svg.select('.tempLine').style('opacity', '0')
     })
+
+  console.log('그래프가 업데이트됨.')
+
+  initLink()
+  initNode()
+  initLabel()
 
   function updateNode() {
     initNode()
@@ -434,9 +463,4 @@ function updateGraph(container, testingSetter, dispatch) {
     tempPairingNodes = {}
     console.log('링크가 갱신됨')
   }
-  console.log('그래프가 업데이트됨.')
-
-  initLink()
-  initNode()
-  initLabel()
 }
