@@ -11,10 +11,12 @@ import {
 } from 'react-icons/fa'
 import { colorPalette } from '../lib/styleGuide'
 
-export default React.memo(function MarkdownEditor({
-  bindingText,
-  bindingSetter,
-}) {
+MarkdownEditor.defaultProps = {
+  width: '600px',
+  height: '400px',
+}
+
+function MarkdownEditor({ bindingText, bindingSetter, width, height }) {
   const [localText, setLocalText] = useState(bindingText)
 
   const onChangeText = useCallback(
@@ -115,11 +117,12 @@ export default React.memo(function MarkdownEditor({
           value={bindingText}
           onChange={onChangeText}
           maxLength={10000}
+          style={{ width: width, height: height }}
         ></StyledTextarea>
       </div>
     </div>
   )
-})
+}
 
 const MarkdownToolkit = styled.div`
   margin-bottom: 10px;
@@ -152,3 +155,5 @@ const StyledTextarea = styled.textarea`
     border: none;
   }
 `
+
+export default React.memo(MarkdownEditor)

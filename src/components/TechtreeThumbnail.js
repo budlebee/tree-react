@@ -49,8 +49,7 @@ function runForceGraph(
   // 그 좌표에 대해 렌더링하는 시점에만 보정을 가한다.
   // 그래야지 navbar 높이가 변해도 문제없이 렌더링 할 수 있음.
 
-  const nodeRadius = 15
-  const navbarHeight = 85
+  const nodeRadius = 15 / 2
   const linkWidth = '2.5px'
   const linkColor = '#000000'
 
@@ -65,7 +64,7 @@ function runForceGraph(
     .append('svg')
     .attr('height', height)
     .attr('width', width)
-    .attr('viewBox', `${width / 3} ${height / 3} ${width} ${height}`)
+    .attr('viewbox', `${width / 3} ${height / 3} ${width} ${height}`)
 
   const clientRect = container.getBoundingClientRect()
   const relativeTop = clientRect.top
@@ -80,7 +79,7 @@ function runForceGraph(
     .append('svg:marker')
     .attr('id', 'end-arrow')
     .attr('viewBox', '0 -5 10 10')
-    .attr('refX', nodeRadius * 1.3)
+    .attr('refX', nodeRadius * 2.6)
     .attr('markerWidth', 6)
     .attr('markerHeight', nodeRadius * 1.5)
     .attr('orient', 'auto')
@@ -96,10 +95,10 @@ function runForceGraph(
     .selectAll('line')
     .data(linkList)
     .join('line')
-    .attr('x1', (d) => d.startX)
-    .attr('y1', (d) => d.startY)
-    .attr('x2', (d) => d.endX)
-    .attr('y2', (d) => d.endY)
+    .attr('x1', (d) => d.startX / 2)
+    .attr('y1', (d) => d.startY / 2)
+    .attr('x2', (d) => d.endX / 2)
+    .attr('y2', (d) => d.endY / 2)
     .attr('class', (d) => d.id)
     .style('stroke', linkColor)
     .style('stroke-width', linkWidth)
@@ -112,10 +111,10 @@ function runForceGraph(
     .attr('r', (d) => d.radius)
     .style('fill', (d) => d.fillColor)
     .attr('cx', (d) => {
-      return d.x
+      return d.x / 2
     })
     .attr('cy', (d) => {
-      return d.y
+      return d.y / 2
     })
     .attr('class', (d) => {
       return d.id
@@ -126,10 +125,10 @@ function runForceGraph(
     .data(nodeList)
     .join('text')
     .attr('x', (d) => {
-      return d.x
+      return d.x / 2
     })
     .attr('y', (d) => {
-      return d.y + nodeRadius * 2
+      return d.y / 2 + nodeRadius * 4
     })
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'central')
@@ -139,10 +138,8 @@ function runForceGraph(
     })
     .style('user-select', 'none')
     .style('background-color', '#ffffff')
-
-  return {
-    nodes: () => {
-      return svg.node()
-    },
-  }
+    .style(
+      'text-shadow',
+      '-3px 0 #F2F1F6, 0 3px #F2F1F6, 3px 0 #F2F1F6, 0 -3px #F2F1F6'
+    )
 }

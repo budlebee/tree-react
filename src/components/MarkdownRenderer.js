@@ -22,6 +22,7 @@ const MarkdownStyledBlock = styled.div`
   &.dracula {
     ${prismThemes['dracula']}
   }
+  word-break: break-all;
   pre {
     font-family: 'Fira Mono', source-code-pro, Menlo, Monaco, Consolas,
       'Courier New', monospace;
@@ -29,6 +30,7 @@ const MarkdownStyledBlock = styled.div`
     padding: 1rem;
     border-radius: 4px;
     line-height: 1.5;
+
     overflow-x: auto;
     letter-spacing: 0px;
     ${mediaSize.small} {

@@ -11,6 +11,9 @@ import {
   createNode,
   createLink,
   deleteNode,
+  deleteLink,
+  editTechtree,
+  finishTechtreeEdit,
 } from '../redux/techtree'
 import { useDispatch, useSelector } from 'react-redux'
 import { reduxStore } from '../index'
@@ -98,6 +101,17 @@ function initGraph(
     .style('opacity', '0')
     .attr('display', 'none')
 
+  // 그래프 수정 버튼
+  svg
+    .append('g:graphEditButton')
+    .append('rect')
+    .attr('width', 10)
+    .attr('height', 10)
+    .attr('x', width / 2 - 10)
+    .attr('y', 10)
+    .style('fill', 'red')
+    .attr('display', 'inline')
+
   const linkGroup = svg.append('g').attr('class', 'links')
   const nodeGroup = svg.append('g').attr('class', 'nodes')
   const labelGroup = svg.append('g').attr('class', 'labels')
@@ -127,7 +141,7 @@ function updateGraph(container, testingSetter, dispatch) {
   const relativeLeft = clientRect.left
   const scrolledTopLength = window.pageYOffset
   const absoluteYPosition = scrolledTopLength + relativeTop
-  const absoluteXPostion = relativeLeft
+  const absoluteXPosition = relativeLeft
 
   let nodeList = reduxStore.getState().techtree.nodeList
   let linkList = reduxStore.getState().techtree.linkList
@@ -141,7 +155,11 @@ function updateGraph(container, testingSetter, dispatch) {
     endY: null,
   }
 
+  let editMode = false
+
   reduxStore.subscribe(updateNode)
+  //reduxStore.subscribe(updateLink)
+  // 리덕스 스토어가 갱신될때마다 node랑 link 둘다 업데이트하면 무한호출로 에러발생.
 
   const svg = d3.select(container).select('svg')
 
@@ -159,176 +177,103 @@ function updateGraph(container, testingSetter, dispatch) {
     .attr('d', 'M0,-5L10,0L0,5')
     .attr('fill', '#000')
 
+  // 그래프 수정 토글
+  svg
+    .append('g')
+    .append('rect')
+    .attr('width', 10)
+    .attr('height', 10)
+    .attr('x', width / 2 - 10)
+    .attr('y', 10)
+    .style('fill', 'red')
+    .attr('display', 'inline')
+    .on('click', () => {
+      if (reduxStore.getState().techtree.isEditingTechtree) {
+        reduxStore.dispatch(finishTechtreeEdit())
+      } else {
+        reduxStore.dispatch(editTechtree())
+      }
+
+      console.log('그래프 수정 토글이 클릭됨: ', editMode)
+      initNode()
+      initLink()
+      initLabel()
+    })
+
   const linkGroup = svg.select('.links')
   const nodeGroup = svg.select('.nodes')
   const labelGroup = svg.select('.labels')
+  const deleteButtonLength = 10
 
-  linkGroup
-    .selectAll('line')
-    .data(linkList)
-    .join('line')
-    .attr('x1', (d) => d.startX - absoluteXPostion)
-    .attr('y1', (d) => d.startY - absoluteYPosition)
-    .attr('x2', (d) => d.endX - absoluteXPostion)
-    .attr('y2', (d) => d.endY - absoluteYPosition)
-    .attr('class', (d) => d.id)
-    .style('stroke', linkColor)
-    .style('stroke-width', linkWidth)
-    .attr('marker-end', 'url(#end-arrow)')
+  function initLink() {
+    linkGroup
+      .selectAll('line')
+      .data(linkList)
+      .join('line')
+      .attr('x1', (d) => d.startX)
+      .attr('y1', (d) => d.startY)
+      .attr('x2', (d) => d.endX)
+      .attr('y2', (d) => d.endY)
+      .attr('class', (d) => d.id)
+      .style('stroke', linkColor)
+      .style('stroke-width', linkWidth)
+      .attr('marker-end', 'url(#end-arrow)')
+
+    // 링크 삭제버튼
+    linkGroup
+      .selectAll('rect')
+      .data(linkList)
+      .join('rect')
+      .attr('width', deleteButtonLength)
+      .attr('height', deleteButtonLength)
+      .style('fill', 'red')
+      .attr('x', (link) => {
+        return (link.startX + link.endX) / 2
+      })
+      .attr('y', (link) => {
+        return (link.startY + link.endY) / 2
+      })
+      .attr('class', (d) => {
+        return `delete${d.id}`
+      })
+      .attr('display', () => {
+        if (reduxStore.getState().techtree.isEditingTechtree) {
+          return 'inline'
+        } else {
+          return 'none'
+        }
+      })
+      .on('click', (link) => {
+        const deleteOK = window.confirm('정말 연결을 삭제하시나요?')
+        if (deleteOK) {
+          dispatch(deleteLink(linkList, link))
+        } else {
+          return
+        }
+      })
+      .style('cursor', 'pointer')
+  }
 
   // 노드 생성
-  nodeGroup
-    .selectAll('circle')
-    .data(nodeList)
-    .join('circle')
-    .attr('r', (d) => d.radius)
-    .style('fill', (d) => d.fillColor)
-    .attr('cx', (d) => {
-      return d.x - absoluteXPostion
-    })
-    .attr('cy', (d) => {
-      return d.y - absoluteYPosition
-    })
-    .attr('class', (d) => {
-      return d.id
-    })
-    .on('click', (d) => {
-      const previousNodeList = returnPreviousNodeList(linkList, nodeList, d)
-      const nextNodeList = returnNextNodeList(linkList, nodeList, d)
-      dispatch(selectNode(previousNodeList, nextNodeList, d))
-    })
-    .on('mousedown', (d) => {
-      // 여기서 분기처리해야될듯.
-      svg
-        .select('g')
-        .select('.tempLine')
-        .attr('x1', d.x - absoluteXPostion)
-        .attr('y1', d.y - absoluteYPosition)
-        .style('opacity', '1')
-        .attr('display', 'inline')
-      tempPairingNodes.startNodeID = d.id
-      tempPairingNodes.startX = d.x
-      tempPairingNodes.startY = d.y
-      console.log('노드에서 마우스 다운중:')
-    })
-    .on('mouseup', (d) => {
-      console.log('이 노드에서 마우스 업이 수행됨:', d)
-
-      tempPairingNodes.endNodeID = d.id
-      tempPairingNodes.endX = d.x
-      tempPairingNodes.endY = d.y
-      // 연결된 노드를 데이터에 반영
-      if (
-        tempPairingNodes.startNodeID !== tempPairingNodes.endNodeID &&
-        tempPairingNodes.startX !== tempPairingNodes.endX &&
-        tempPairingNodes.startY !== tempPairingNodes.endY &&
-        !linkList.find(
-          (element) =>
-            element.startNodeID === tempPairingNodes.startNodeID &&
-            element.endNodeID === tempPairingNodes.endNodeID
-        ) &&
-        d3.select('.tempLine').attr('x1') > 0
-      ) {
-        tempPairingNodes.id = `link${uid(20)}`
-        linkList.push({ ...tempPairingNodes })
-        updateLink()
-        console.log('노드끼리 연결됨:', tempPairingNodes)
-      }
-      // 데이터에 반영됐으면 임시 페어링을 초기화.
-      tempPairingNodes = {}
-    })
-    .style('cursor', 'pointer')
-
-  // 노드 삭제용 버튼 만들기
-  nodeGroup
-    .selectAll('rect')
-    .data(nodeList)
-    .join('rect')
-    .attr('width', (d) => d.radius)
-    .attr('height', (d) => d.radius)
-    .style('fill', (d) => d.fillColor)
-    .attr('x', (d) => {
-      return d.x - absoluteXPostion
-    })
-    .attr('y', (d) => {
-      return d.y - absoluteYPosition - nodeRadius * 2
-    })
-    .attr('class', (d) => {
-      return d.id
-    })
-    .on('click', (d) => {
-      dispatch(deleteNode(nodeList, linkList, d))
-    })
-    .style('cursor', 'pointer')
-
-  labelGroup
-    .selectAll('text')
-    .data(nodeList)
-    .join('text')
-    .attr('x', (d) => {
-      return d.x - absoluteXPostion
-    })
-    .attr('y', (d) => {
-      return d.y - absoluteYPosition + nodeRadius * 2
-    })
-    .attr('text-anchor', 'middle')
-    .attr('dominant-baseline', 'central')
-    .attr('class', (d) => d.id)
-    .text((d) => {
-      return d.name
-    })
-    .style('user-select', 'none')
-    .style(
-      'text-shadow',
-      '-3px 0 #F2F1F6, 0 3px #F2F1F6, 3px 0 #F2F1F6, 0 -3px #F2F1F6'
-    )
-
-  svg
-    .on('dblclick', () => {
-      const createdNode = {
-        id: `node${uid(20)}`,
-        name: '새로운 노드',
-        x: d3.event.pageX,
-        y: d3.event.pageY,
-        radius: nodeRadius,
-        body: '새로운 내용',
-        tag: '프론트엔드',
-        fillColor: '#00bebe',
-        parentNodeID: [],
-        childNodeID: [],
-      }
-      nodeList = [...nodeList, createdNode]
-      reduxStore.dispatch(createNode(nodeList))
-      updateNode()
-    })
-    .on('mousemove', (d) => {
-      svg
-        .select('g')
-        .select('.tempLine')
-        .attr('x2', d3.event.pageX - absoluteXPostion)
-        .attr('y2', d3.event.pageY - absoluteYPosition)
-      //console.log(':', svg.select('g').select('.tempLine'))
-      // console.log('마우스 움직이는 중. x2,y2:', d3.event.pageX, d3.event.pageY)
-    })
-    .on('mouseup', (d) => {
-      svg.select('.tempLine').style('opacity', '0')
-    })
-
-  function updateNode() {
+  function initNode() {
     nodeGroup
       .selectAll('circle')
       .data(nodeList)
       .join('circle')
-      .attr('r', (d) => {
-        return d.radius
-      })
-      //.style('stroke', selectedNodeHighlightColor)
+      .attr('r', (d) => d.radius)
       .style('fill', (d) => d.fillColor)
+      .style('stroke', (d) => {
+        if (d.id === reduxStore.getState().techtree.selectedNode.id) {
+          return 'red'
+        } else {
+          return
+        }
+      })
       .attr('cx', (d) => {
-        return d.x - absoluteXPostion
+        return d.x
       })
       .attr('cy', (d) => {
-        return d.y - absoluteYPosition
+        return d.y
       })
       .attr('class', (d) => {
         return d.id
@@ -336,17 +281,20 @@ function updateGraph(container, testingSetter, dispatch) {
       .on('click', (d) => {
         const previousNodeList = returnPreviousNodeList(linkList, nodeList, d)
         const nextNodeList = returnNextNodeList(linkList, nodeList, d)
-
         dispatch(selectNode(previousNodeList, nextNodeList, d))
       })
       .on('mousedown', (d) => {
+        // 여기서 분기처리해야될듯.
+        // 꾹 누르고, 마우스 좌표가 2.5초이상 가만히 있다면
+        // 그때는 삭제버튼들의 display 속성을 inline 으로 바꿈.
+        //
         svg
           .select('g')
           .select('.tempLine')
-          .attr('x1', d.x - absoluteXPostion)
-          .attr('y1', d.y - absoluteYPosition)
+          .attr('x1', d.x)
+          .attr('y1', d.y)
           .style('opacity', '1')
-
+          .attr('display', 'inline')
         tempPairingNodes.startNodeID = d.id
         tempPairingNodes.startX = d.x
         tempPairingNodes.startY = d.y
@@ -354,6 +302,7 @@ function updateGraph(container, testingSetter, dispatch) {
       })
       .on('mouseup', (d) => {
         console.log('이 노드에서 마우스 업이 수행됨:', d)
+
         tempPairingNodes.endNodeID = d.id
         tempPairingNodes.endX = d.x
         tempPairingNodes.endY = d.y
@@ -367,31 +316,65 @@ function updateGraph(container, testingSetter, dispatch) {
               element.startNodeID === tempPairingNodes.startNodeID &&
               element.endNodeID === tempPairingNodes.endNodeID
           ) &&
-          d3.select('.tempLine').attr('x1') > 0
+          d3.select('.tempLine').attr('x1') > 0 &&
+          d3.select('.tempLine').attr('y1') > 0
         ) {
           tempPairingNodes.id = `link${uid(20)}`
           linkList.push({ ...tempPairingNodes })
           updateLink()
-          //setTimeout(linkList.push({ ...tempPairingNodes }), 0)
           console.log('노드끼리 연결됨:', tempPairingNodes)
         }
 
-        // 데이터에 반영됐으면 임시 페어링을 초기화.
+        svg.select('g').select('.tempLine').attr('x1', 0).attr('y1', 0)
         tempPairingNodes = {}
-        //console.log('노드 페어링 초기화:', tempPairingNodes)
-        //console.log(':', linkList)
       })
       .style('cursor', 'pointer')
 
+    // 노드 삭제용 버튼 만들기
+    nodeGroup
+      .selectAll('rect')
+      .data(nodeList)
+      .join('rect')
+      .attr('width', deleteButtonLength)
+      .attr('height', deleteButtonLength)
+      .style('fill', (d) => d.fillColor)
+      .attr('x', (d) => {
+        return d.x - d.radius * 1.5
+      })
+      .attr('y', (d) => {
+        return d.y - d.radius * 1.5
+      })
+      .attr('class', (d) => {
+        return d.id
+      })
+      .attr('display', () => {
+        if (reduxStore.getState().techtree.isEditingTechtree) {
+          return 'inline'
+        } else {
+          return 'none'
+        }
+      })
+      .on('click', (d) => {
+        const deleteOK = window.confirm(`${d.name} 노드를 삭제하시나요?`)
+        if (deleteOK) {
+          dispatch(deleteNode(nodeList, linkList, d))
+        } else {
+          return
+        }
+      })
+      .style('cursor', 'pointer')
+  }
+
+  function initLabel() {
     labelGroup
       .selectAll('text')
       .data(nodeList)
       .join('text')
       .attr('x', (d) => {
-        return d.x - absoluteXPostion
+        return d.x
       })
       .attr('y', (d) => {
-        return d.y - absoluteYPosition + nodeRadius * 2
+        return d.y + nodeRadius * 2
       })
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
@@ -399,29 +382,61 @@ function updateGraph(container, testingSetter, dispatch) {
       .text((d) => {
         return d.name
       })
+      .style('user-select', 'none')
       .style(
         'text-shadow',
         '-3px 0 #F2F1F6, 0 3px #F2F1F6, 3px 0 #F2F1F6, 0 -3px #F2F1F6'
       )
-      .style('user-select', 'none')
-    console.log('노드가 갱신됨.')
-  }
-  function updateLink() {
-    linkGroup
-      .selectAll('line')
-      .data(linkList)
-      .join('line')
-      .attr('x1', (d) => d.startX - absoluteXPostion)
-      .attr('y1', (d) => d.startY - absoluteYPosition)
-      .attr('x2', (d) => d.endX - absoluteXPostion)
-      .attr('y2', (d) => d.endY - absoluteYPosition)
-      .attr('class', (d) => d.id)
-      .style('stroke', linkColor)
-      .style('stroke-width', linkWidth)
-      .attr('marker-end', 'url(#end-arrow)')
-    reduxStore.dispatch(createLink(linkList))
-    console.log('링크가 갱신됨')
   }
 
+  svg
+    .on('dblclick', () => {
+      const createdNode = {
+        id: `node${uid(20)}`,
+        name: '새로운 노드',
+        x: d3.event.pageX - absoluteXPosition,
+        y: d3.event.pageY - absoluteYPosition,
+        radius: nodeRadius,
+        body: '새로운 내용',
+        hashtags: [],
+        fillColor: '#00bebe',
+        parentNodeID: [],
+        childNodeID: [],
+      }
+      console.log('d3.event.pageX:', d3.event.pageX)
+      console.log('d3.event.pageY:', d3.event.pageY)
+      nodeList = [...nodeList, createdNode]
+      reduxStore.dispatch(createNode(nodeList))
+      updateNode()
+    })
+    .on('mousemove', (d) => {
+      svg
+        .select('g')
+        .select('.tempLine')
+        .attr('x2', d3.event.pageX - absoluteXPosition)
+        .attr('y2', d3.event.pageY - absoluteYPosition)
+      //console.log(':', svg.select('g').select('.tempLine'))
+      // console.log('마우스 움직이는 중. x2,y2:', d3.event.pageX, d3.event.pageY)
+    })
+    .on('mouseup', (d) => {
+      svg.select('.tempLine').style('opacity', '0')
+    })
+
+  function updateNode() {
+    initNode()
+    initLabel()
+    console.log('노드가 갱신됨.')
+  }
+
+  function updateLink() {
+    initLink()
+    reduxStore.dispatch(createLink(linkList))
+    tempPairingNodes = {}
+    console.log('링크가 갱신됨')
+  }
   console.log('그래프가 업데이트됨.')
+
+  initLink()
+  initNode()
+  initLabel()
 }
